@@ -412,7 +412,7 @@ void zephyr_boot_log_stop(void)
 #define BUTTON_0_DETECT_DELAY CONFIG_BOOT_USB_DFU_DETECT_DELAY
 #endif
 
-#define BUTTON_0_NODE DT_ALIAS(mcuboot_button0)
+#define BUTTON_0_NODE DT_ALIAS(sw0)
 
 #if DT_NODE_EXISTS(BUTTON_0_NODE) && DT_NODE_HAS_PROP(BUTTON_0_NODE, gpios)
 static const struct gpio_dt_spec button0 = GPIO_DT_SPEC_GET(BUTTON_0_NODE, gpios);
@@ -477,6 +477,8 @@ static bool detect_pin(void)
 #endif
 
 #ifdef CONFIG_MCUBOOT_SERIAL
+extern bool boot_uart_key_prompt(void);
+
 static void boot_serial_enter()
 {
     int rc;
@@ -532,7 +534,7 @@ void main(void)
     mcuboot_status_change(MCUBOOT_STATUS_STARTUP);
 
 #ifdef CONFIG_BOOT_SERIAL_ENTRANCE_GPIO
-    if (detect_pin() &&
+    if ((detect_pin() || boot_uart_key_prompt()) &&
             !boot_skip_serial_recovery()) {
         boot_serial_enter();
     }
